@@ -4,8 +4,15 @@
   const money = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
   const round = n => Math.round(n * 100) / 100;
   const storageKey = 'kevins-cookie-shop-v1';
+  const varieties = {
+    classic: { name: 'Chocolate chip', cost: .50, price: 2, note: 'The neighborhood favorite.' },
+    oatmeal: { name: 'Oatmeal cinnamon', cost: .65, price: 2.50, note: 'Cozy cinnamon with hearty oats.' },
+    double: { name: 'Double chocolate', cost: .90, price: 3.25, note: 'A rich treat for chocolate lovers.' }
+  };
+  const recipe = id => Object.hasOwn(varieties, id) ? varieties[id] : varieties.classic;
+  const selectedRecipe = () => recipe($('variety').value);
   const events = [
-    { title: 'A fresh start', text: 'A regular day in the neighborhood. A $2 cookie is a good starting point.', demand: 1 },
+    { title: 'A fresh start', text: 'A regular day in the neighborhood. Try the suggested price for your chosen cookie.', demand: 1 },
     { title: 'Market day', text: 'The local market brings extra foot traffic. Expect about 25% more customers.', demand: 1.25 },
     { title: 'Rain in the forecast', text: 'A rainy day keeps some neighbors inside. Expect about 20% less foot traffic.', demand: .8 },
     { title: 'The afternoon rush', text: 'Office workers are looking for a sweet break. Expect about 15% more customers.', demand: 1.15 },
@@ -18,15 +25,22 @@
     const saved = JSON.parse(localStorage.getItem(storageKey));
     if (saved && Number.isFinite(saved.cash) && saved.cash >= 0 && Array.isArray(saved.history) && saved.history.length <= 30 && saved.history.every(r => ['day','sold','revenue','expenses','profit','cash'].every(k => Number.isFinite(r[k])))) state = saved;
   } catch (_) { /* A private browser can block local storage. */ }
+  const previous = state.history.at(-1);
+  if (previous) {
+    $('variety').value = Object.hasOwn(varieties, previous.variety) ? previous.variety : 'classic';
+    $('price').value = Number.isFinite(previous.price) ? previous.price.toFixed(2) : selectedRecipe().price.toFixed(2);
+  }
   const forecast = () => events[state.history.length % events.length];
   const ended = () => state.history.length >= 30 || state.cash < 5;
   function costs() {
     const quantity = Number($('quantity').value);
     const advertising = Number($('advertising').value);
-    return { quantity, advertising, ingredients: round(quantity * .5), total: round(quantity * .5 + advertising + 5) };
+    return { quantity, advertising, ingredients: round(quantity * selectedRecipe().cost), total: round(quantity * selectedRecipe().cost + advertising + 5) };
   }
   function updateCost() {
-    const c = costs();
+    const c = costs(), variety = selectedRecipe();
+    $('unit-cost').textContent = `${money(variety.cost)} each`;
+    $('variety-note').textContent = `${variety.note} Suggested price: ${money(variety.price)}. You set the final price.`;
     $('ingredients').textContent = money(c.ingredients);
     $('ad-cost').textContent = money(c.advertising);
     $('cost').textContent = money(c.total);
@@ -49,7 +63,7 @@
       $('result-label').textContent = `DAY ${last.day} · AFTER CLOSING`;
       $('result-badge').textContent = last.profit >= 0 ? 'A sweet day' : 'Room to grow';
       $('result-title').textContent = last.profit >= 0 ? 'That’s how the cookie earns.' : 'A little room to rise.';
-      $('result-message').textContent = `${last.sold} of ${last.quantity} cookies sold. ${last.quantity - last.sold} unsold cookies were donated at closing. ${last.sold === last.quantity && last.quantity > 0 ? 'You sold out! Try a bigger batch tomorrow.' : 'Adjust your batch, price, or advertising for tomorrow.'}`;
+      $('result-message').textContent = `${last.sold} of ${last.quantity} ${recipe(last.variety).name.toLowerCase()} cookies sold. ${last.quantity - last.sold} unsold cookies were donated at closing. ${last.sold === last.quantity && last.quantity > 0 ? 'You sold out! Try a bigger batch tomorrow.' : 'Adjust your batch, price, or advertising for tomorrow.'}`;
       for (const key of ['sold', 'revenue', 'expenses', 'profit']) $('' + key).textContent = key === 'sold' ? last.sold.toLocaleString() : money(last[key]);
       color($('profit'), last.profit);
     }
@@ -62,8 +76,8 @@
       $('result-title').textContent = days >= 30 ? 'Your first chapter, complete.' : 'Every baker starts somewhere.';
       $('result-message').textContent = `You finished ${days} day${days === 1 ? '' : 's'} with ${money(state.cash)} and ${money(totalProfit)} in total profit. Your final daily results are below.`;
     }
-    for (const id of ['quantity', 'price', 'advertising']) $(id).disabled = playing || ended();
-    $('ledger').innerHTML = [...state.history].reverse().map(r => `<tr><td>${r.day}</td><td>${r.sold}</td><td>${money(r.revenue)}</td><td>${money(r.expenses)}</td><td class="${r.profit >= 0 ? 'positive' : 'negative'}">${money(r.profit)}</td><td>${money(r.cash)}</td></tr>`).join('');
+    for (const id of ['variety', 'quantity', 'price', 'advertising']) $(id).disabled = playing || ended();
+    $('ledger').innerHTML = [...state.history].reverse().map(r => `<tr><td>${r.day}</td><td>${recipe(r.variety).name}</td><td>${r.sold}</td><td>${money(r.revenue)}</td><td>${money(r.expenses)}</td><td class="${r.profit >= 0 ? 'positive' : 'negative'}">${money(r.profit)}</td><td>${money(r.cash)}</td></tr>`).join('');
     $('empty').hidden = days > 0;
     const values = [100, ...state.history.map(r => r.cash)];
     const max = Math.max(...values) * 1.1, min = Math.min(0, ...values);
@@ -87,7 +101,7 @@
   function animateDay(day) {
     playing = true;
     updateCost();
-    for (const id of ['quantity', 'price', 'advertising']) $(id).disabled = true;
+    for (const id of ['variety', 'quantity', 'price', 'advertising']) $(id).disabled = true;
     $('bake').textContent = 'Serving happy neighbors…';
     $('skip-animation').hidden = false;
     $('shop-scene').classList.add('is-open');
@@ -125,6 +139,10 @@
     later(finishDay, visitors ? (visitors - 1) * 190 + 2900 : 1800);
   }
   $('skip-animation').addEventListener('click', () => { if (playing) finishDay(); });
+  $('variety').addEventListener('change', () => {
+    $('price').value = selectedRecipe().price.toFixed(2);
+    updateCost();
+  });
   $('plan').addEventListener('input', updateCost);
   $('plan').addEventListener('submit', event => {
     event.preventDefault();
@@ -132,10 +150,10 @@
     const c = costs(), price = Number($('price').value);
     if (!Number.isInteger(c.quantity) || c.total > state.cash || c.quantity < 0 || c.advertising < 0 || price < .25 || !Number.isFinite(c.total)) return;
     // Advertising has diminishing returns; higher prices reduce demand.
-    const demand = Math.max(0, Math.round((55 + 22 * Math.sqrt(c.advertising)) * Math.pow(2 / price, 1.4) * forecast().demand * (.9 + Math.random() * .2)));
+    const demand = Math.max(0, Math.round((55 + 22 * Math.sqrt(c.advertising)) * Math.pow(selectedRecipe().price / price, 1.4) * forecast().demand * (.9 + Math.random() * .2)));
     const sold = Math.min(c.quantity, demand), revenue = round(sold * price), profit = round(revenue - c.total);
     state.cash = round(state.cash + profit);
-    state.history.push({ day: state.history.length + 1, quantity: c.quantity, sold, price, advertising: c.advertising, revenue, expenses: c.total, profit, cash: state.cash });
+    state.history.push({ day: state.history.length + 1, quantity: c.quantity, variety: $('variety').value, unitCost: selectedRecipe().cost, sold, price, advertising: c.advertising, revenue, expenses: c.total, profit, cash: state.cash });
     try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch (_) {}
     animateDay(state.history.at(-1));
   });
