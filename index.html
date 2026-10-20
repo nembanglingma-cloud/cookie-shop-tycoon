@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Lingma Nembang">
   <title>Kevin's Cookie Shop Tycoon</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -10,7 +11,17 @@
   <div class="shell">
     <header><a class="brand" href="index.html"><span class="brand-icon">✦</span> KEVIN'S <span>COOKIE CO.</span></a><button id="restart" class="text-button">Start fresh ↗</button></header>
     <main>
-      <section class="intro"><div><p class="eyebrow">A LITTLE DOUGH. A BIG DREAM.</p><h1>Your neighborhood.<br>Your cookie empire.</h1><p class="subtitle">Thirty days to turn $100 into something sweet.</p></div><div class="cookie-art" aria-hidden="true"><div class="cookie"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="art-label">BAKED WITH AMBITION</span></div></section>
+      <section class="intro"><div><p class="eyebrow">A LITTLE DOUGH. A BIG DREAM.</p><h1>Your neighborhood.<br>Your cookie empire.</h1><p class="subtitle">Thirty days to turn $100 into something sweet.</p><p class="creator-credit">Created by <strong>Lingma Nembang</strong></p></div><div class="cookie-art" aria-hidden="true"><div class="cookie"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="art-label">BAKED WITH AMBITION</span></div></section>
+      <details class="how-to-play" open>
+        <summary>How to Play <span>Your first batch starts here</span></summary>
+        <ol>
+          <li><strong>Plan your batch.</strong> Start with $100. Choose a cookie variety and how many cookies to bake.</li>
+          <li><strong>Set your strategy.</strong> Pick a selling price and advertising budget. Your total cost, including $5 daily overhead, must fit your cash.</li>
+          <li><strong>Open your doors.</strong> Click <strong>Open shop &amp; bake</strong> to watch customers arrive. Use <strong>See results</strong> to skip the animation.</li>
+          <li><strong>Learn and grow.</strong> Review sales, expenses, profit, and cash. Adjust tomorrow’s plan and finish 30 days with as much cash as you can!</li>
+        </ol>
+        <p>Lower prices attract more customers; advertising boosts demand. Unsold cookies are donated each night. The shop closes early if you have less than $5. Progress saves in this browser when available.</p>
+      </details>
       <div class="stats"><div><span>Cash on hand</span><strong id="cash">$100.00</strong><small>Your next batch starts here</small></div><div><span>Total profit</span><strong id="total-profit">$0.00</strong><small>Since opening day</small></div><div><span>Cookies sold</span><strong id="total-sold">0</strong><small>A little happiness, delivered</small></div><div><span>The journey</span><strong id="day">Day 1 <em>/ 30</em></strong><div class="progress"><div id="progress"></div></div></div></div>
       <section class="shop-panel" aria-label="Animated cookie shop">
         <div class="shop-heading"><div><p class="eyebrow">A LITTLE NEIGHBORHOOD MAGIC</p><h2>Fresh from Kevin’s</h2></div><span id="shop-status" class="badge" role="status">Ready to open</span></div>
@@ -20,7 +31,7 @@
       <div class="workspace"><section class="panel decisions"><div class="panel-heading"><span class="step">01</span><div><p class="eyebrow">THE DAILY RECIPE</p><h2 id="decision-title">Let's open the shop.</h2></div></div><div class="forecast"><span>☀</span><div><strong id="forecast-title">A fresh start</strong><p id="forecast-text"></p></div></div>
         <form id="plan"><label for="variety">Today’s cookie <span>One signature batch per day</span></label><select id="variety" aria-describedby="variety-note"><option value="classic">Chocolate chip</option><option value="oatmeal">Oatmeal cinnamon</option><option value="double">Double chocolate</option></select><p id="variety-note" class="variety-note"></p><label for="quantity">Cookies to bake <span id="unit-cost">$0.50 each</span></label><div class="input-wrap"><span>◉</span><input id="quantity" type="number" min="0" max="10000" step="1" value="80" required><span>cookies</span></div><label for="price">Price per cookie <span>Find your sweet spot</span></label><div class="input-wrap"><span>$</span><input id="price" type="number" min="0.25" max="20" step="0.05" value="2.00" required></div><label for="advertising">Advertising budget <span>Get the word out</span></label><div class="input-wrap"><span>$</span><input id="advertising" type="number" min="0" max="10000" step="0.50" value="10.00" required></div><div class="cost-lines"><div><span>Ingredients</span><strong id="ingredients"></strong></div><div><span>Advertising</span><strong id="ad-cost"></strong></div><div><span>Daily shop overhead</span><strong>$5.00</strong></div><div class="cost-total"><span>Total upfront cost</span><strong id="cost"></strong></div></div><p id="error" role="alert"></p><button class="primary" id="bake" type="submit">Open shop & bake <span>→</span></button><p class="form-note">One batch. One day. Make it count.</p></form>
       </section><section class="right-column"><div class="panel results" aria-live="polite"><div class="result-header"><p class="eyebrow" id="result-label">YOUR STORY STARTS HERE</p><span id="result-badge" class="badge">Opening soon</span></div><h2 id="result-title">Good things take dough.</h2><p id="result-message">Set your recipe for success on the left, then open your doors. Your daily results will appear here.</p><div class="result-grid"><div><span>Cookies sold</span><strong id="sold">—</strong></div><div><span>Revenue</span><strong id="revenue">—</strong></div><div><span>Expenses</span><strong id="expenses">—</strong></div><div><span>Daily profit</span><strong id="profit">—</strong></div></div><div class="cash-result"><span>Cash after closing</span><strong id="closing">$100.00</strong></div></div><div class="panel history"><div class="history-heading"><h2>The cookie trail</h2><span>DAILY LEDGER</span></div><div id="chart" class="chart" aria-label="Cash balance by day"></div><div class="table-scroll"><table><thead><tr><th>Day</th><th>Cookie</th><th>Sold</th><th>Revenue</th><th>Expenses</th><th>Profit</th><th>Cash</th></tr></thead><tbody id="ledger"></tbody></table><p id="empty">Your first chapter is still in the oven.</p></div></div></section></div>
-      <footer><span>KEVIN'S COOKIE SHOP TYCOON</span><p>Fresh cookies. Smart choices. Sweet success.</p><span>30 DAYS · ENDLESS POSSIBILITIES</span></footer>
+      <footer><span>KEVIN'S COOKIE SHOP TYCOON</span><p class="footer-credit">Created by <strong>Lingma Nembang</strong></p><span>30 DAYS · ENDLESS POSSIBILITIES</span></footer>
     </main>
   </div><script src="game.js"></script>
 </body>
